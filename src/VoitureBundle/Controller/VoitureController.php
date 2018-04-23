@@ -6,6 +6,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
 use VoitureBundle\Entity\Marque;
 use VoitureBundle\Entity\Voiture;
+use VoitureBundle\Entity\Image;
 use  Symfony\Component\Form\Extension\Core\Type\TextType;
 use  Symfony\Component\Form\Extension\Core\Type\DateType;
 use  Symfony\Bridge\Doctrine\Form\Type\EntityType;
@@ -38,30 +39,31 @@ class VoitureController extends Controller
     $form=$this->createFormBuilder($voiture)
             ->add('numSerie',TextType::class)
             ->add('dateMiseCircu',DateType::class)
-            ->add('photo',FileType::class,array('label'=>'photo'))
+            ->add('path',FileType::class,array('multiple' => true,'mapped' => false))
             ->add('marque',EntityType::class,array  ('class'  =>  'VoitureBundle:Marque','choice_label'  =>  'nomMarque','choice_value'  =>'id'))
             ->add('Add',SubmitType::class)->getForm();
     $form->handleRequest($request);
             //tester  si  le  formuaire  est  valide
             if($form->isValid())
             {
-                $file = $voiture->getPhoto();
-
-                // Generate a unique name for the file before saving it
-                $fileName = md5(uniqid()).'.'.$file->guessExtension();
-
-                // Move the file to the directory where brochures are stored
-                $file->move(
-                    $this->container->getParameter('brochures_directory'),
-                    $fileName
-                );
-
-                // Update the 'brochure' property to store the PDF file name
-                // instead of its contents
-                $voiture->setPhoto($fileName);
+                $data= $form->getData(); 
+                $files= $form->get('path')->getData();    
                 $em=$this->getDoctrine()->getManager();
                 $em->persist($voiture);
-                $em->flush();
+                $em->flush();            
+                foreach($files as $file ){
+                    $image=new Image;                    
+                    $image->setVoiture($voiture);
+                    $fileName = md5(uniqid()).'.'.$file->guessExtension();
+                    $file->move(
+                        $this->container->getParameter('brochures_directory'),
+                        $fileName
+                    );
+                    $image->setPath($fileName);
+                    $em=$this->getDoctrine()->getManager();
+                    $em->persist($image);
+                    $em->flush(); 
+                }
             }
             return  $this->render('VoitureBundle:Default:formvoiture.html.twig',array('f'  =>  $form->createView()));
     }

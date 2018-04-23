@@ -50,26 +50,6 @@ class Voiture
      }
 
     /**
-     * @var string
-     *
-     * @ORM\Column(name="Photo", type="string", length=255)
-     */
-    private  $photo;
-    /**
-     * Get photo
-     *
-     * @return string
-     */
-
-    function  getPhoto()
-    {
-        return  $this->photo;
-    }
-    function  setPhoto($photo) 
-     {
-         $this->photo  =  $photo;
-     }
-    /**
      * Get id
      *
      * @return int
