@@ -1,0 +1,21 @@
+<button>Cliquez sur moi :)</button>
+<div class="contenu"></div>
+{% block javascripts %} 
+
+  <script src="{{asset('js/jquery-3.3.1.min.js')}}"></script>
+  <script>
+            $.ajax({
+                url: "{{path('jsonvoiture')}}", 
+                type: "GET",
+                success: function(data){
+                    console.log(data);
+                    json=obj = jQuery.parseJSON(data);
+                    $.each(json, function(arrayID,voiture) {
+                    $(".contenu").append("<p>"+ voiture.serie + " "+ voiture.photo +"</p>");
+                    });
+                }
+ 
+            });
+
+  </script>
+{% endblock javascripts %}

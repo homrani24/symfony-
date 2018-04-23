@@ -12,6 +12,7 @@ use  Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use  Symfony\Component\Form\Extension\Core\Type\SubmitType;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Form\Extension\Core\Type\FileType;
+use Symfony\Component\HttpFoundation\JsonResponse;
 
 class VoitureController extends Controller
 {
@@ -32,9 +33,9 @@ class VoitureController extends Controller
     */
     public  function  addVoitureAction(Request  $request)
     {
-    $v=new  Voiture();
+    $voiture=new  Voiture();
     //générer  le  formulaire
-    $form=$this->createFormBuilder($v)
+    $form=$this->createFormBuilder($voiture)
             ->add('numSerie',TextType::class)
             ->add('dateMiseCircu',DateType::class)
             ->add('photo',FileType::class,array('label'=>'photo'))
@@ -44,7 +45,7 @@ class VoitureController extends Controller
             //tester  si  le  formuaire  est  valide
             if($form->isValid())
             {
-                $file = $v->getPhoto();
+                $file = $voiture->getPhoto();
 
                 // Generate a unique name for the file before saving it
                 $fileName = md5(uniqid()).'.'.$file->guessExtension();
@@ -57,9 +58,9 @@ class VoitureController extends Controller
 
                 // Update the 'brochure' property to store the PDF file name
                 // instead of its contents
-                $v->setPhoto($fileName);
+                $voiture->setPhoto($fileName);
                 $em=$this->getDoctrine()->getManager();
-                $em->persist($v);
+                $em->persist($voiture);
                 $em->flush();
             }
             return  $this->render('VoitureBundle:Default:formvoiture.html.twig',array('f'  =>  $form->createView()));
@@ -72,4 +73,31 @@ class VoitureController extends Controller
         $voitures  =  $this->getDoctrine()->getRepository("VoitureBundle:Voiture")->findAll();
         return  $this->render('VoitureBundle:Default:listevoiture.html.twig',array('voitures'  =>  $voitures));
     }
+        /**
+    *@Route("/testajax")
+    */
+    public  function  testVoitureAction()
+    {
+        return  $this->render('VoitureBundle:Default:testajax.html.twig');
+    }
+    /**
+    *@Route("/jsonVoitures",  name="jsonvoiture")
+    */
+    public  function  jsonVoitureAction()
+    {
+        $voitures  =  $this->getDoctrine()->getRepository("VoitureBundle:Voiture")->findAll();
+        $formatted = [];
+        foreach ($voitures as $voiture) {
+            $formatted[] = [
+                'id' => $voiture->getId(),
+                'serie'=> $voiture->getNumSerie(),
+                'photo'=> $voiture->getPhoto(),                    
+            ];
+        }
+
+        $response=new JsonResponse(json_encode($formatted));
+        $response->headers->set('Content-Type', 'application/json');
+        return $response;
+    }
+    
 }
