@@ -30,12 +30,25 @@ class DefaultController extends Controller
         return $this->redirect($this->generateUrl('jsonvoiture'));
 
     }
-
-
-
-
-
 // $user=json_decode($user);
-   die();
+    }
+        /**
+     * @Route("/mailer")
+     */
+    public function mailAction()
+    {
+        //transport
+        $transport = $this->container->get('swiftmailer.transport.real');
+        // Create the Mailer using your created Transport
+        $mailer = new \Swift_Mailer($transport);
+        // Create a message
+        $message = (new \Swift_Message('Wonderful Subject'))
+        ->setFrom(['john@doe.com' => 'John Doe'])
+        ->setTo(['receiver@domain.org', 'other@domain.org' => 'A name'])
+        ->setBody('Here is the message itself')
+        ;
+        // Send the message
+        $result = $mailer->send($message);
+        die($result);
     }
 }
