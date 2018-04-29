@@ -4,6 +4,7 @@ namespace VoitureBundle\Controller;
 
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
+use Symfony\Component\HttpFoundation\Response;
 
 
 class DefaultController extends Controller
@@ -50,5 +51,30 @@ class DefaultController extends Controller
         // Send the message
         $result = $mailer->send($message);
         die($result);
+    }
+    
+    /**
+     * @Route("/pdfformat")
+     */
+    public function pdfAction()
+    {
+        $snappy = $this->get('knp_snappy.pdf');
+        
+        $html = $this->renderView('VoitureBundle:Default:pdf.html.twig', array(
+            //..Send some data to your view if you need to //
+        ));
+        
+        $filename = 'myFirstSnappyPDF';
+
+        return new Response(
+            $snappy->getOutputFromHtml($html),
+            200,
+            array(
+                'Content-Type'          => 'application/pdf',
+                'Content-Disposition'   => 'inline; filename="'.$filename.'.pdf"'
+            )
+        );
+        
+
     }
 }
